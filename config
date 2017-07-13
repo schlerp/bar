@@ -1,0 +1,167 @@
+#!/bin/sh
+
+# lemonbar options
+font="monofur for Powerline-10"
+iconfont="Ionicons-10"
+iconfont2="FontAwesome-10"
+geometery="x35"
+click_areas=20
+
+
+# fonts applied to lemonbar
+f_text="%{T1}"
+f_icon="%{T2}"
+f_icon2="%{T3}"
+
+
+# actions
+act_wsp_s_up="i3-msg workspace next_on_output"
+act_wsp_s_down="i3-msg workspace prev_on_output"
+act_title_c="echo title was clicked"
+act_blu_c="bluetooth toggle"
+act_mem_c="./action mem"
+act_cpu_c="./action cpu"
+act_vol_c="./action vol"
+act_bat_c="./action bat"
+act_duh_c="./action duh"
+act_dur_c="./action dur"
+act_date_c="./action date"
+act_time_c="./action time"
+act_sid_c="./action sid"
+act_wifi_c="./action wicd"
+act_shutdown_c="shutdown -t now"
+act_reboot_c="reboot"
+act_lock_c="~/bin/pixfflock"
+
+
+# panel fifo
+panel_fifo="/tmp/panel_fifo"
+
+
+# update intervals
+upd_bat=10
+upd_blu=10
+upd_date=60
+upd_disk_home=60
+upd_disk_root=60
+upd_load=5
+upd_mem=5
+upd_sid=5
+upd_time=2
+upd_vol=3
+upd_win=2
+upd_wsp=2
+
+
+# icons
+icon_bat_empty=""
+icon_bat_low=""
+icon_bat_mid=""
+icon_bat_full=""
+icon_charging=""
+icon_blu=""
+icon_date=""
+icon_duh=""
+icon_dur=""
+icon_cpu=""
+icon_mem=""
+icon_sid=""
+icon_time=""
+icon_vol_high=""
+icon_vol_mid=""
+icon_vol_low=""
+icon_mute=""
+icon_lock=""
+icon_shutdown=""
+
+
+# lemonbar block seperators
+#sep_left="${f_icon}${f_text}"
+#sep_right="${f_icon}${f_text}"
+#sep_between="${f_icon}${f_text}"
+sep="${f_icon}${f_text}"
+
+
+# colours smaterial
+base00="#263238"
+base01="#ff4500"
+base02="#8bc34a"
+base03="#ffc107"
+base04="#03a9f4"
+base05="#e91e63"
+base06="#009688"
+base07="#cfd8dc"
+
+base08="#37474f"
+base09="#ff614d"
+base0A="#9ccc65"
+base0B="#ffa000"
+base0C="#81d4fa"
+base0D="#ad1457"
+base0E="#26a69a"
+base0F="#eceff1"
+
+c_black="$base00"
+c_red="$base09"
+c_green="$base02"
+c_yellow="$base03"
+c_blue="$base04"
+c_purple="$base05"
+c_teal="$base06"
+c_white="$base07"
+c_black_bright="$base08"
+c_red_bright="$base01"
+c_green_bright="$base0A"
+c_yellow_bright="$base0B"
+c_blue_bright="$base0C"
+c_purple_bright="$base0D"
+c_teal_bright="$base0E"
+c_white_bright="$base0F"
+
+c_grey1="$base01"
+c_grey2="$base02"
+c_grey3="$base03"
+c_grey4="$base04"
+c_grey5="$base05"
+c_grey6="$base06"
+c_white="$base07"
+
+c_bg_l="$base00"
+c_bg_d="$base08"
+c_fg_l="$base0F"
+c_fg_d="$base07"
+
+# colours applied to lemonbar
+n_black="%{ B${c_bg_d} F${c_black} }"
+n_red="%{ B${c_bg_d} F${c_red} }"
+n_green="%{ B${c_bg_d} F${c_green} }"
+n_yellow="%{ B${c_bg_d} F${c_yellow} }"
+n_blue="%{ B${c_bg_d} F${c_blue} }"
+n_purple="%{ B${c_bg_d} F${c_purple} }"
+n_teal="%{ B${c_bg_d} F${c_teal} }"
+n_white="%{ B${c_bg_d} F${c_white} }"
+n_black_bright="%{ B${c_bg_d} F${c_black_bright} }"
+n_red_bright="%{ B${c_bg_d} F${c_red_bright} }"
+n_green_bright="%{ B${c_bg_d} F${c_green_bright} }"
+n_yellow_bright="%{ B${c_bg_d} F${c_yellow_bright} }"
+n_blue_bright="%{ B${c_bg_d} F${c_blue_bright} }"
+n_purple_bright="%{ B${c_bg_d} F${c_purple_bright} }"
+n_teal_bright="%{ B${c_bg_d} F${c_teal_bright} }"
+n_white_bright="%{ B${c_bg_d} F${c_white_bright} }"
+
+h_black="%{ B${c_bg_l} F${c_black} }"
+h_red="%{ B${c_bg_l} F${c_red} }"
+h_green="%{ B${c_bg_l} F${c_green} }"
+h_yellow="%{ B${c_bg_l} F${c_yellow} }"
+h_blue="%{ B${c_bg_l} F${c_blue} }"
+h_purple="%{ B${c_bg_l} F${c_purple} }"
+h_teal="%{ B${c_bg_l} F${c_teal} }"
+h_white="%{ B${c_bg_l} F${c_white} }"
+h_black_bright="%{ B${c_bg_l} F${c_black_bright} }"
+h_red_bright="%{ B${c_bg_l} F${c_red_bright} }"
+h_green_bright="%{ B${c_bg_l} F${c_green_bright} }"
+h_yellow_bright="%{ B${c_bg_l} F${c_yellow_bright} }"
+h_blue_bright="%{ B${c_bg_l} F${c_blue_bright} }"
+h_purple_bright="%{ B${c_bg_l} F${c_purple_bright} }"
+h_teal_bright="%{ B${c_bg_l} F${c_teal_bright} }"
+h_white_bright="%{ B${c_bg_l} F${c_white_bright} }"

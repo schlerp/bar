@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# source config
+. $(dirname $1)/config
+
+$(dirname $1)/i3_ws.py > ${panel_fifo} &
+

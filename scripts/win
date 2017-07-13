@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# parser: WIN
+
+# source config
+. $(dirname $1)/config
+
+#str_win=$(xprop -spy -root _NET_ACTIVE_WINDOW | sed -un 's/.*\(0x.*\)/WIN\1/p')
+
+printf "%s\n" $(xprop -spy -root _NET_ACTIVE_WINDOW | sed -un 's/.*\(0x.*\)/WIN\1/p') > "${panel_fifo}" &
+

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# parser: DAT
+
+# source config
+. $(dirname $1)/config
+
+str_date=$(date "+%D")
+
+printf "DAT%s\n" ${str_date} > ${panel_fifo} &
+

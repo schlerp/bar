@@ -1,0 +1,135 @@
+#!/bin/bash
+
+# source config
+. $(dirname $0)/config
+
+
+# LOCK
+s_lock="%{A:${act_lock_c}:}${f_icon}${icon_lock}${f_text}%{A}"
+  
+# shutdown button
+s_shutdown="%{A1:${act_shutdown_c}:}%{A2:${act_reboot_c}:}${f_icon}${icon_shutdown}${f_text}%{A}%{A}"
+
+# parser main loop
+while read -r line ; do
+  case $line in
+    BAT*)
+      # Battery readout:
+      #   [0] = integer part
+      #   [1] = charging status (D(ischarging), C(harging))
+      #   [2] = power level (F(ull), N(ormal), L(ow), C(ritical))
+      bat_arr=(${line#???})
+      if [[ ${bat_arr[2]} == "F" ]]; then
+        temp_bat="${f_icon}${icon_bat_full}${f_text} ${bat_arr[0]}%"
+      elif [[ ${bat_arr[2]} == "N" ]]; then
+        temp_bat="${f_icon}${icon_bat_mid}${f_text} ${bat_arr[0]}%"
+      elif [[ ${bat_arr[2]} == "L" ]]; then
+        temp_bat="${n_yellow}${f_icon}${icon_bat_low}${f_text} ${bat_arr[0]}%${n_white}"
+      elif [[ ${bat_arr[2]} == "C" ]]; then
+        temp_bat="${n_red_bright}${f_icon}${icon_bat_empty}${f_text} ${bat_arr[0]}%${n_white}"
+      fi
+
+      if [[ ${bat_arr[1]} == "C" ]]; then
+        temp_bat="${n_green}${f_icon}${icon_charging}${f_text} ${bat_arr[0]}%${n_white}"
+      fi
+      s_bat="%{A:${act_bat_c}:}${temp_bat}%{A}"
+      ;;
+
+    BLU*)
+      if [[ ${line#???} == "on" ]]; then
+        temp_blu="${n_blue}${f_icon}${icon_blu}${f_text}${n_white}"
+      else
+        temp_blu="${n_black}${f_icon}${icon_blu}${f_text}${n_white}"
+      fi
+      s_blu="%{A:${act_blu_c}:}${temp_blu}%{A}"
+      ;;
+
+    DAT*)
+      temp_date="${f_icon}${icon_date}${f_text} ${line#???}"
+      s_date="%{A:${act_date_c}:}${temp_date}%{A}"
+      ;;
+
+    DUH*)
+      temp_duh="${f_icon}${icon_duh}${f_text} ${line#???}"
+      s_duh="%{A:${act_duh_c}:}${temp_duh}%{A}"
+      ;;
+
+    DUR*)
+      temp_dur="${f_icon}${icon_dur}${f_text} ${line#???}"
+      s_dur="%{A:${act_dur_c}:}${f_icon}${icon_dur}${f_text} ${line#???}%{A}"
+      ;;
+
+    LOD*)
+      temp_cpu="${f_icon}${icon_cpu}${f_text} ${line#???}"
+      s_cpu="%{A:${act_cpu_c}:}${temp_cpu}%{A}" 
+      ;;
+    
+    MEM*)
+      temp_mem="${f_icon}${icon_mem}${f_text} ${line#???}"
+      s_mem="%{A:${act_mem_c}:}${temp_mem}%{A}"
+      ;;
+      
+    SID*)
+      if [[ ${line#???} == "" ]]; then
+        s_sid="%{A:${act_wifi_c}:}${n_black}${f_icon}${icon_wifi}${f_text} No AP${n_white}%{A}"
+      else
+        s_sid="%{A:${act_wifi_c}:}${f_icon}${icon_wifi}%{A} %{A:${act_sid_c}:}${f_text} ${line#???}%{A}"
+      fi
+      ;;
+      
+    TIM*)
+      temp_time="${f_icon}${icon_time}${f_text} ${line#???}"
+      s_time="%{A:${act_time_c}:}${temp_time}%{A}"
+      ;;
+
+    VOL*)
+      # Volume:
+      #   [0] Muted indicator: (M=Muted / (anything else)=Unmuted)
+      #   [1] On/off (muted) status (1=Unmuted / 0=Muted)
+      vol_arr=(${line#???})
+      vol_frg=-
+      vol_oln=-
+      if [[ ${vol_arr[0]} == "M" ]]; then
+        temp_vol="${n_black}${f_icon}${icon_mute}${f_text} ${vol_arr[1]}${n_white}"
+      else
+        if [[ ${vol_arr[1]} -gt 66 ]]; then
+          temp_vol="${f_icon}${icon_vol_high}${f_text} ${vol_arr[1]}"
+        elif [[ ${vol_arr[1]} -gt 33 ]]; then
+          temp_vol="${f_icon}${icon_vol_mid}${f_text} ${vol_arr[1]}"
+        else
+          temp_vol="${f_icon}${icon_vol_low}${f_text} ${vol_arr[1]}"
+        fi
+      fi
+      s_vol="%{A:${act_vol_c}:}${temp_vol}%{A}"
+      ;;
+
+    WIN*)
+      title=$(xprop -id ${line#???} | awk '/_NET_WM_NAME/{$1=$2="";print}' | cut -d'"' -f2)
+      s_title="${n_blue_bright} ${title}${n_white}"
+      ;;
+
+    WSP*)
+      wsp="${n_white}"
+      set -- ${line#???}
+      while [ $# -gt 0 ] ; do
+        case $1 in
+         FOC*)
+           wsp="${wsp}${h_teal_bright} ${f_icon2}${1#???}${f_text} "
+           ;;
+         INA*|ACT*)
+           wsp="${wsp}${n_teal} ${f_icon2}${1#???}${f_text} "
+           ;;
+	     URG*)
+           wsp="${wsp}${n_yellow} ${f_icon2}${1#???}${f_text} "
+        esac
+        shift
+      done
+      s_wsp="%{A4:${act_wsp_s_up}:}%{A5:${act_wsp_s_down}:}${wsp}${n_white}%{A}%{A}"
+      ;;
+
+  esac
+
+  printf "%s\n" "%{l}${s_wsp} ${s_title} %{r}${sep} ${s_blu} ${s_sid} ${sep} ${s_cpu} ${s_mem} ${sep} ${s_duh} ${sep} ${s_dur} ${sep} ${s_vol} ${sep} ${s_bat} ${sep} ${s_date} ${s_time} ${sep} ${s_lock} ${sep} ${s_shutdown} "
+
+done
+

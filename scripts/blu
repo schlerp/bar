@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# parser: BLU
+
+# source config
+. $(dirname $1)/config
+
+printf "BLU$(bluetooth | cut -d ' ' -f 3)\n" > "${panel_fifo}" &
+

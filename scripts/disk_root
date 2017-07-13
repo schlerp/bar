@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# parser: DUR
+
+# source config
+. $(dirname $1)/config
+
+df -h | awk '$NF=="/"{printf "DUR%s of %s\n", $3, $2}' > ${panel_fifo} & 
+

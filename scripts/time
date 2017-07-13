@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# parser: TIM
+
+# source config
+. $(dirname $1)/config
+
+str_time=$(date "+%I:%M%p")
+
+printf "TIM%s\n" ${str_time} > ${panel_fifo} &

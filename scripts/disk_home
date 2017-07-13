@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# parser: DUH
+
+# source config
+. $(dirname $1)/config
+
+df -h | awk '$NF=="/home"{printf "DUH%s of %s\n", $3, $2}' > ${panel_fifo} & 
+

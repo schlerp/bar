@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# parser: BAT
+
+# source config
+. $(dirname $1)/config
+
+# Get battery percentage
+CAPACITY=$(cat /sys/class/power_supply/BAT0/capacity) # Charged percentage
+
+# Get charging status
+CHARGING="D"
+
+if [[ `cat /sys/class/power_supply/AC/online` -eq 1 ]]; then
+  CHARGING="C"
+fi
+  
+# Get power level status
+STATUS="N"
+  
+if [[ $CAPACITY -gt 90 ]]; then
+  STATUS="F";
+elif [[ $CAPACITY -lt 15 ]]; then
+  STATUS="C"
+elif [[ $CAPACITY -lt 40 ]]; then
+  STATUS="L"
+fi
+	
+# Get discharge rate
+#DISTIME=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep time | cut -d' ' -f13-16)
+	
+#echo "BAT$CAPACITY $CHARGING $STATUS $DISTIME"
+printf "BAT$CAPACITY $CHARGING $STATUS\n" > "${panel_fifo}" &
+

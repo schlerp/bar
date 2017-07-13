@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# parser: MEM
+
+# source config
+. $(dirname $1)/config
+
+str_mem=$(free -h | awk 'NR==2{printf "%s\n", $3}')
+
+printf "MEM%s\n" ${str_mem} > ${panel_fifo}
+

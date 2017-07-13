@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# source config
+. $(dirname $1)/config
+
+act_mem_c="./action mem"
+act_cpu_c="./action cpu"
+act_vol_c="./action vol"
+act_bat_c="./action bat"
+act_duh_c="./action duh"
+act_dur_c="./action dur"
+act_date_c="./action date"
+act_time_c="./action time"
+act_sid_c="./action sid"
+act_wifi_c="./action wicd"
+
+
+case $1 in
+  sid*)
+    st -g 100x28-10+45 -n floating_st sudo wavemon
+    ;;
+    
+  wicd*)
+    st -g 100x28-10+45 -n floating_st wicd-curses
+    ;;
+    
+  cpu*)
+    st -g 100x28-10+45 -n floating_st htop
+    ;;
+    
+  mem*)
+    st -g 100x28-10+45 -n floating_st htop
+    ;;
+    
+  date*)
+    st -g 100x28-10+45 -n floating_st calcurse
+    ;;
+    
+  time*)
+    st -g 100x28-10+45 -n floating_st tty-clock
+    ;;
+    
+  bat*)
+    st -g 75x25-10+45 -n floating_st -e bash -c '~/bin/bat_upower.sh'
+    ;;
+    
+  vol*)
+    st -g 100x20-10+45 -n floating_st pulsemixer
+    ;;
+  
+  duh*)
+    st -g 100x28-10+45 -n floating_st ncdu ~
+    ;;
+    
+  dur*)
+    st -g 100x28-10+45 -n floating_st sudo ncdu /
+    ;;
+    
+  #mail*)
+    #st -g 100x28-10+45 -n floating_st mutt
+    #;;
+esac

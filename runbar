@@ -1,0 +1,133 @@
+#!/bin/sh
+
+# runbar.sh
+# ---------
+# this is the main executable, run this to start the status bar
+# the following files are used:
+#   runbar - this file
+#   config - the config file
+#   parser - parses the fifo
+#   action - handles clicks and other actions
+#   scripts - directory of modules to be called
+
+
+# source config
+. $(dirname $0)/config
+
+
+# ensure it is only instance running
+if [ $(pgrep -cx $(basename $0)) -gt 1 ] ; then
+  printf "%s\n" "The status bar is already running." >&2
+  exit 1
+fi
+
+
+# trap signals
+trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
+
+
+# initialise fifo
+[ -e "${panel_fifo}" ] && rm "${panel_fifo}"
+mkfifo "${panel_fifo}"
+
+
+### UPDATE INTERVAL METERS
+cnt_bat=$(echo "${upd_bat}+1" | bc)
+cnt_blu=$(echo "${upd_blu}+1" | bc)
+cnt_date=$(echo "${upd_date}+1" | bc)
+cnt_disk_home=$(echo "${upd_disk_home}+1" | bc)
+cnt_disk_root=$(echo "${upd_disk_root}+1" | bc)
+cnt_load=$(echo "${upd_load}+1" | bc)
+cnt_mem=$(echo "${upd_mem}+1" | bc)
+cnt_sid=$(echo "${upd_sid}+1" | bc)
+cnt_time=$(echo "${upd_time}+1" | bc)
+cnt_vol=$(echo "${upd_vol}+1" | bc)
+#cnt_win=$(echo "${upd_win}+1" | bc)
+#cnt_wsp=$(echo "${upd_wsp}+1" | bc)
+
+
+debug=1
+
+# constant running scripts
+# get window
+xprop -spy -root _NET_ACTIVE_WINDOW | sed -un 's/.*\(0x.*\)/WIN\1/p' > "${panel_fifo}" &
+# get workspaces
+bash scripts/wsp $0 &
+
+# main loop
+while :; do
+  
+  # bat
+  if [ $((cnt_bat++)) -ge ${upd_bat} ]; then
+    bash scripts/bat $0
+    cnt_bat=0
+
+    #if [[ debug -gt 0 ]]; then
+      #echo "ran bat!"
+    #fi
+  fi
+
+  # blu
+  if [ $((cnt_blu++)) -ge ${upd_blu} ]; then
+    bash scripts/blu $0
+    cnt_blu=0
+  fi
+
+  # date
+  if [ $((cnt_date++)) -ge ${upd_date} ]; then
+    bash scripts/date $0
+    cnt_date=0
+  fi
+
+  # disk_home
+  if [ $((cnt_disk_home++)) -ge ${upd_disk_home} ]; then
+    bash scripts/disk_home $0
+    cnt_disk_home=0
+  fi
+
+  # disk_root
+  if [ $((cnt_disk_root++)) -ge ${upd_disk_root} ]; then
+    bash scripts/disk_root $0
+    cnt_disk_root=0
+  fi
+
+  # load
+  if [ $((cnt_load++)) -ge ${upd_load} ]; then
+    bash scripts/load $0
+    cnt_load=0
+  fi
+
+  # mem
+  if [ $((cnt_mem++)) -ge ${upd_mem} ]; then
+    bash scripts/mem $0
+    cnt_mem=0
+  fi
+
+  # sid
+  if [ $((cnt_sid++)) -ge ${upd_sid} ]; then
+    bash scripts/sid $0
+    cnt_sid=0
+  fi
+
+  # time
+  if [ $((cnt_time++)) -ge ${upd_time} ]; then
+    bash scripts/time $0
+    cnt_time=0
+  fi
+
+  # vol
+  if [ $((cnt_vol++)) -ge ${upd_vol} ]; then
+    bash scripts/vol $0
+    cnt_vol=0
+  fi
+
+  sleep 1s;
+done &
+
+
+# read the fifo, parse it with parser, and pipe to lemonbar!
+cat "${panel_fifo}" | $(dirname $0)/parser | \
+lemonbar -p -f "${font}" -f "${iconfont}" -f "${iconfont2}" -g "${geometry}" -B "${c_bg_d}" -F "${c_fg_d}" -a ${click_areas} | \
+while read line; do eval $line; done
+
+wait

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# parser: SID
+
+# source config
+. $(dirname $1)/config
+
+printf "SID$(iwgetid -r)\n" > "${panel_fifo}" &
+
